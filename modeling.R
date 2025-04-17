@@ -3,8 +3,6 @@
 library(forecast)
 library(TSA)
 library(tseries)
-#require(lmtest)
-#library(sandwich)
 
 # ##################################################
 # environment variables
@@ -118,13 +116,6 @@ qqline(model.sm.resid)
 # qqline(model.cos.resid)
 # # It is not normally distributed
 # 
-# #     fitting model
-# #plot(unrate.2015)
-# #model.cos.f = ts(fitted(model.cos)
-# #                  ,start = start(unrate.2015)
-# #                  )#,freq = frequency(unrate.2015)) # 12
-# #lines(model.cos.f,col=2,lty=2)
-# 
 # plot(model.cos.resid)
 # abline(h=0,col=2)
 # 
@@ -145,12 +136,6 @@ qqline(model.sm.resid)
 # qqline(model.poly.resid)
 # # It is not normally distributed
 # 
-# #plot(unrate.2015)
-# #model.poly.f = ts(fitted(model.poly)
-# #                  ,start = start(unrate.2015)
-# #                  )#,freq = frequency(unrate.2015)) # 12
-# #lines(model.poly.f,col=2,lty=2)
-# 
 # plot(rstandard(model.poly))
 # abline(h=0,col=2)
 # acf(rstandard(model.poly))
@@ -166,33 +151,33 @@ kpss.test(unrate.2015) # rejected -> NOT stationary
 # stochastic trend likely -> transformation is necessary
 
 ##############################
-# first difference with seasonal means model
-unrate.2015.diff = diff(unrate.2015) # differencing before seasonal means
-month.diff = season(unrate.2015)[-1] # excluding first observation because of differencing
-
-diff.sm.2015.lm = lm(unrate.2015.diff~month.diff)
-diff.sm.2015 = ts(resid(diff.sm.2015.lm), start=c(start.year, start.month+1), freq = 12)
-
-plot(diff.sm.2015, main="Residuals of Seasonal Means Model on Differenced Series")
-abline(h=mean(diff.sm.2015))
-
-acf(diff.sm.2015, lag.max=500) # a bit hard to tell, many significant higher lags
-pacf(diff.sm.2015, lag.max=100)
-
-#     stationarity
-runs(diff.sm.2015) # p>0.05 -> supports stationarity
-adf.test(diff.sm.2015) # rejected -> stationary
-pp.test(diff.sm.2015) # rejected -> stationary
-kpss.test(diff.sm.2015) # rejected -> NOT stationary
-
-#     normal distribution check
-hist(diff.sm.2015)
-qqnorm(diff.sm.2015)
-qqline(diff.sm.2015)
-# looks much better than before
-#checkresiduals(diff.sm.2015) # looks pretty good here
-
-shapiro.test(diff.sm.2015) # violated p-value = < 2.512e-10
+# # first difference with seasonal means model
+# unrate.2015.diff = diff(unrate.2015) # differencing before seasonal means
+# month.diff = season(unrate.2015)[-1] # excluding first observation because of differencing
+# 
+# diff.sm.2015.lm = lm(unrate.2015.diff~month.diff)
+# diff.sm.2015 = ts(resid(diff.sm.2015.lm), start=c(start.year, start.month+1), freq = 12)
+# 
+# plot(diff.sm.2015, main="Residuals of Seasonal Means Model on Differenced Series")
+# abline(h=mean(diff.sm.2015))
+# 
+# acf(diff.sm.2015, lag.max=500) # a bit hard to tell, many significant higher lags
+# pacf(diff.sm.2015, lag.max=100)
+# 
+# #     stationarity
+# runs(diff.sm.2015) # p>0.05 -> supports stationarity
+# adf.test(diff.sm.2015) # rejected -> stationary
+# pp.test(diff.sm.2015) # rejected -> stationary
+# kpss.test(diff.sm.2015) # rejected -> NOT stationary
+# 
+# #     normal distribution check
+# hist(diff.sm.2015, col="skyblue", main="Histogram of Seasonal Means Model Residuals")
+# qqnorm(diff.sm.2015, main="Q-Q Plot of Seasonal Means Model Residuals")
+# qqline(diff.sm.2015, col=2)
+# # looks much better than before
+# #checkresiduals(diff.sm.2015) # looks pretty good here
+# 
+# shapiro.test(diff.sm.2015) # violated p-value = < 2.512e-10
 
 ##############################
 # seasonal differencing
@@ -248,18 +233,18 @@ kpss.test(diff2.2015) # rejected -> NOT stationary
 
 ##############################
 # # first difference (d=1)
-# diff.2015 = diff(unrate.2015)
-# plot(diff.2015, type="l", ylab="Differenced Unemployment Rate", main="Differenced\nUS Unemployment Rate 1948-2015")
-# 
-# model.diff = Arima(unrate.2015, order=c(0,1,0))
-# diff.resid = resid(model.diff)
-# plot(diff.resid, type="l", main="Residuals of first difference\n1948-2015")
-# abline(h=mean(diff.resid)) # mean is basically zero
-# 
-# #     normal distribution check
-# hist(diff.resid)
-# qqnorm(diff.resid)
-# qqline(diff.resid)
+#diff.2015 = diff(unrate.2015)
+#plot(diff.2015, type="l", ylab="Differenced Unemployment Rate", main="Differenced\nUS Unemployment Rate 1948-2015")
+#
+#model.diff = Arima(unrate.2015, order=c(0,1,0))
+#diff.resid = resid(model.diff)
+#plot(diff.resid, type="l", main="Residuals of first difference\n1948-2015")
+#abline(h=mean(diff.resid)) # mean is basically zero
+#
+##     normal distribution check
+#hist(diff.resid)
+#qqnorm(diff.resid)
+#qqline(diff.resid)
 
 
 
@@ -275,16 +260,16 @@ plot(unrate.2015)
 auto.arima(unrate.2015) # SARIMA(3,0,1)(2,1,2)[12]
 
 ##############################
-# seasonal means + diff (d=1)
-plot(diff.sm.2015)
-# p & q
-auto.arima(diff.sm.2015,
-           d=0, # differenced manually
-           D=0, # seasonality removed with seasonal means
-           seasonal=F) # ARIMA(2,0,1)
-acf(diff.sm.2015,lag.max=300) # MA(1), maybe MA(2)
-pacf(diff.sm.2015,lag.max=80) # AR(2), maybe AR(3)/AR(4)
-eacf(diff.sm.2015) # AR(3), ARMA(1,2)
+# # seasonal means + diff (d=1)
+# plot(diff.sm.2015)
+# # p & q
+# auto.arima(diff.sm.2015,
+#            d=0, # differenced manually
+#            D=0, # seasonality removed with seasonal means
+#            seasonal=F) # ARIMA(2,0,1)
+# acf(diff.sm.2015,lag.max=300) # MA(1), maybe MA(2)
+# pacf(diff.sm.2015,lag.max=80) # AR(2), maybe AR(3)/AR(4)
+# eacf(diff.sm.2015) # AR(3), ARMA(1,2)
 
 ##############################
 # seasonal difference (D=1)
@@ -327,12 +312,12 @@ pacf(diff2.2015,lag.max=700) # AR(0)/AR(3)?
 o.auto =     Arima(unrate.2015,order=c(3,0,1),seasonal=c(2,1,2),include.mean=F)
 
 ##############################
-# seasonal means + diff (d=1)
-smd.auto =   Arima(diff.sm.2015,order=c(2,0,1),include.mean=F)
-smd.ma1 =    Arima(diff.sm.2015,order=c(0,0,1),include.mean=F)
-smd.ar2 =    Arima(diff.sm.2015,order=c(2,0,0),include.mean=F)
-smd.ar3 =    Arima(diff.sm.2015,order=c(3,0,0),include.mean=F)
-smd.arma12 = Arima(diff.sm.2015,order=c(1,0,2),include.mean=F)
+# # seasonal means + diff (d=1)
+# smd.auto =   Arima(unrate.2015.diff,order=c(2,0,1),include.mean=F, xreg=model.matrix(model.sm)[-1,])
+# smd.ma1 =    Arima(unrate.2015.diff,order=c(0,0,1),include.mean=F, xreg=model.matrix(model.sm)[-1,])
+# smd.ar2 =    Arima(unrate.2015.diff,order=c(2,0,0),include.mean=F, xreg=model.matrix(model.sm)[-1,])
+# smd.ar3 =    Arima(unrate.2015.diff,order=c(3,0,0),include.mean=F, xreg=model.matrix(model.sm)[-1,])
+# smd.arma12 = Arima(unrate.2015.diff,order=c(1,0,2),include.mean=F, xreg=model.matrix(model.sm)[-1,])
 
 ##############################
 # seasonal difference (D=1)
@@ -354,14 +339,14 @@ fsd.arma42 = Arima(unrate.2015,order=c(4,1,2),seasonal=c(2,1,2),include.mean=F)
 
 
 ##############################
-# models with d=1
-smd.auto # best
-smd.ma1
-smd.ar2 # slightly worse AIC/AICc, but better BIC
-smd.ar3 # very close to auto
-smd.arma12
-
-d1sm.best = smd.auto
+# # models with d=1
+# smd.auto # best
+# smd.ma1
+# smd.ar2 # slightly worse AIC/AICc, but better BIC
+# smd.ar3 # very close to auto
+# smd.arma12
+# 
+# d1sm.best = smd.auto
 
 ##############################
 # models with D=1
@@ -395,24 +380,24 @@ d1D1.best = fsd.PQ
 # ##################################################
 
 ##############################
-# best model with d=1 (+ seasonal means)
-tsdiag(d1sm.best) # zero mean, homoscedastic, looks fairly normal, may not be independent (very close)
-hist(resid(d1sm.best)) # a bit skewed
-qqnorm(resid(d1sm.best))
-qqline(resid(d1sm.best))
-shapiro.test(resid(d1sm.best)) # normality is violated (p-value<0.05)
-#     stationarity
-runs(resid(d1sm.best)) # p>0.05 -> stationarity NOT supported
-adf.test(resid(d1sm.best)) # rejected -> stationary
-pp.test(resid(d1sm.best)) # rejected -> stationary
-kpss.test(resid(d1sm.best)) # fail to reject -> stationary
+# # best model with d=1 (+ seasonal means)
+# tsdiag(d1sm.best) # zero mean, homoscedastic, looks fairly normal, may not be independent (very close)
+# hist(resid(d1sm.best)) # a bit skewed
+# qqnorm(resid(d1sm.best))
+# qqline(resid(d1sm.best))
+# shapiro.test(resid(d1sm.best)) # normality is violated (p-value<0.05)
+# #     stationarity
+# runs(resid(d1sm.best)) # p>0.05 -> stationarity NOT supported
+# adf.test(resid(d1sm.best)) # rejected -> stationary
+# pp.test(resid(d1sm.best)) # rejected -> stationary
+# kpss.test(resid(d1sm.best)) # fail to reject -> stationary
 
 ##############################
 # best model with D=1
 tsdiag(D1.best) # zero mean, homoscedastic, looks fairly normal, is independent
-hist(resid(D1.best)) # looks normal, a few outliers
-qqnorm(resid(D1.best))
-qqline(resid(D1.best))
+hist(resid(D1.best), col="skyblue", main="Histogram of SARIMA(3,0,1)(0,1,2)[12] Residuals") # looks normal, a few outliers
+qqnorm(resid(D1.best), main="Q-Q Plot of SARIMA(3,0,1)(0,1,2)[12] Residuals")
+qqline(resid(D1.best), col=2)
 shapiro.test(resid(D1.best)) # normality is violated (p-value<0.05)
 #     stationarity
 runs(resid(D1.best)) # p>0.05 -> stationarity NOT supported
@@ -423,9 +408,9 @@ kpss.test(resid(D1.best)) # fail to reject -> stationary
 ##############################
 # best model with d=1 & D=1
 tsdiag(d1D1.best) # zero mean, homoscedastic, looks fairly normal, is independent
-hist(resid(d1D1.best)) # looks normal, a few outliers
-qqnorm(resid(d1D1.best))
-qqline(resid(d1D1.best))
+hist(resid(d1D1.best), col="skyblue", main="Histogram of SARIMA(2,1,1)(2,1,1)[12] Residuals") # looks normal, a few outliers
+qqnorm(resid(d1D1.best), main="Q-Q Plot of SARIMA(2,1,1)(2,1,1)[12] Residuals")
+qqline(resid(d1D1.best), col=2)
 shapiro.test(resid(d1D1.best)) # normality is violated (p-value<0.05)
 #     stationarity
 runs(resid(d1D1.best)) # p>0.05 -> stationarity NOT supported
@@ -437,101 +422,99 @@ kpss.test(resid(d1D1.best)) # fail to reject -> stationary
 
 
 # ##################################################
-# Fitting
+# Fitting to data
 # ##################################################
 # best model with d=1 (+ seasonal means) # TODO: This looks wrong, doesn't fit the data
-plot(unrate.2015)
-d1sm.best.f = fitted(d1sm.best)
-sm = coef(model.sm)[1] + coef(model.sm)[-1][month] # seasonal means for each month
-sm = sm[-length(sm)]  # remove the last value
-model.sm.f = ts(d1sm.best.f + sm, start = c(start.year, start.month), freq=12)
-lines(model.sm.f,col=2,lty=2)
+#plot(unrate.2015)
+#d1sm.best.f = fitted(d1sm.best)
+#sm = coef(model.sm)[1] + coef(model.sm)[-1][month] # seasonal means for each month
+#sm = sm[-length(sm)]  # remove the last value
+#model.sm.f = ts(d1sm.best.f + sm, start = c(start.year, start.month), freq=12)
+#lines(model.sm.f,col=2,lty=2)
+
 
 # best model with D=1
-plot(unrate.2015)
-lines(fitted(sd.PQ),col=2,lty=2)
+plot(unrate.2015, ylab="Unemployment Rate (%)", main="Unemployment Rate 1948-2016 with\nfitted SARIMA(3,0,1)(0,1,2)[12] model")
+lines(fitted(D1.best),col=2,lty=2)
+
 
 # best model with d=1 & D=1
-plot(unrate.2015)
-lines(fitted(fsd.PQ),col=2,lty=2)
+plot(unrate.2015, ylab="Unemployment Rate (%)", main="Unemployment Rate 1948-2016 with\nfitted SARIMA(2,1,1)(2,1,1)[12] model")
+lines(fitted(d1D1.best),col=2,lty=2)
 
-
+# Mean Squared Error Comparison
+mse_fit.D1best = mean((unrate.2015 - fitted(D1.best))^2, na.rm = TRUE)
+mse_fir.d1D1best = mean((unrate.2015 - fitted(d1D1.best))^2, na.rm = TRUE)
 
 
 # ##################################################
 # Forecasting & Error
 # ##################################################
-# models to compare
-models = list(
-  "Seasonal Means ARIMA(2,0,1)" = d1sm.best,
-  "SARIMA(3,0,1)(0,1,2)[12]" = sd.PQ,
-  "SARIMA(2,1,1)(2,1,1)[12]" = fsd.PQ
-)
-
 # forecast horizon
 ts_future = unrate.2016.2024
 h = length(ts_future)
+short_h = 48 # short horizon (months)
 
-# short horizon (months)
-short_h = 48
+##############################
+# best model with d=1 (+ seasonal means)
+#TODO
 
-# months and newdata for seasonal means
-months.future = rep(levels(month), length.out=h)
-newdata = data.frame(month=factor(months.future, levels=levels(month)))
 
-# MSE results
-mse_full = numeric(length(models))
-mse_short = numeric(length(models))
-names(mse_full) = names(models)
-names(mse_short) = names(models)
+##############################
+# best model with D=1
+pred.D1best = predict(D1.best, n.ahead = h)
+pr = pred.D1best$pred
+uci = pr + 2 * pred.D1best$se
+lci = pr - 2 * pred.D1best$se
 
-# forecasting, plotting, and evaluation loop
-for (model_name in names(models)) {
-  model = models[[model_name]]
-  
-  if (model_name == "Seasonal Means ARIMA(2,0,1)") { # forecast may not be correct
-    sm.pred = predict(model.sm, newdata = newdata)
-    smd.pred.resid = predict(model, n.ahead = h)
-    pr = sm.pred + smd.pred.resid$pred
-    uci = pr + 2 * smd.pred.resid$se
-    lci = pr - 2 * smd.pred.resid$se
-  } else {
-    pred = predict(model, n.ahead=h)
-    pr = pred$pred
-    uci = pr + 2 * pred$se
-    lci = pr - 2 * pred$se
-  }
-  
-  # ts forecast
-  pr.ts = ts(pr, start=start(ts_future), freq=frequency(ts_future))
-  uci.ts = ts(uci, start=start(ts_future), freq=frequency(ts_future))
-  lci.ts = ts(lci, start=start(ts_future), freq=frequency(ts_future))
-  
-  # plot
-  ymin = 0 # min(c(lci.ts, ts_future)) - 0.1 # realistically can't be below 0
-  ymax = max(c(uci.ts, ts_future)) + 0.1
-  
-  plot(unrate, xlim=c(2010, 2024), ylim=c(ymin, ymax),
-       main=paste(model_name, "Forecast"), ylab="Unemployment Rate (%)")
-  lines(pr.ts, col=2)
-  lines(uci.ts, col=3)
-  lines(lci.ts, col=3)
-  abline(h = 0)
-  
-  # MSE: full forecast ts
-  mse_full[model_name] = mean((ts_future - pr)^2, na.rm=T)
-  # MSE: months specified
-  mse_short[model_name] = mean((ts_future[1:short_h] - pr[1:short_h])^2, na.rm=T)
-}
+pr.ts = ts(pr, start = start(ts_future), freq = frequency(ts_future))
+uci.ts = ts(uci, start = start(ts_future), freq = frequency(ts_future))
+lci.ts = ts(lci, start = start(ts_future), freq = frequency(ts_future))
 
-# MSE df
+plot(unrate, xlim = c(2000, 2024), ylim = c(0, 15),
+     main = "SARIMA(3,0,1)(0,1,2)[12] Forecast", ylab = "Unemployment Rate (%)")
+lines(pr.ts, col = 2)
+lines(uci.ts, col = 3)
+lines(lci.ts, col = 3)
+abline(h = 0)
+
+mse_full.D1best = mean((ts_future - pr)^2, na.rm = TRUE)
+mse_short.D1best = mean((ts_future[1:short_h] - pr[1:short_h])^2, na.rm = TRUE)
+
+
+##############################
+# best model with d=1 & D=1
+pred.d1D1best = predict(d1D1.best, n.ahead = h)
+pr = pred.d1D1best$pred
+uci = pr + 2 * pred.d1D1best$se
+lci = pr - 2 * pred.d1D1best$se
+
+pr.ts = ts(pr, start = start(ts_future), freq = frequency(ts_future))
+uci.ts = ts(uci, start = start(ts_future), freq = frequency(ts_future))
+lci.ts = ts(lci, start = start(ts_future), freq = frequency(ts_future))
+
+plot(unrate, xlim = c(2000, 2024), ylim = c(0, 15),
+     main = "SARIMA(2,1,1)(2,1,1)[12] Forecast", ylab = "Unemployment Rate (%)")
+lines(pr.ts, col = 2)
+lines(uci.ts, col = 3)
+lines(lci.ts, col = 3)
+abline(h = 0)
+
+mse_full.d1D1best = mean((ts_future - pr)^2, na.rm = TRUE)
+mse_short.d1D1best = mean((ts_future[1:short_h] - pr[1:short_h])^2, na.rm = TRUE)
+
+##############################
+# Mean Squared Error Comparison
 mse_df = data.frame(
-  Model = names(models),
-  MSE_full = round(mse_full, 3),
-  MSE_n_months = round(mse_short, 3),
-  row.names = NULL
+  Model = c(#'Seasonal Means ARIMA(2,0,1)',
+            'SARIMA(3,0,1)(0,1,2)[12]',
+            'SARIMA(2,1,1)(2,1,1)[12]'),
+  MSE_fit = round(c(#mse_fir.sm, 
+    mse_fit.D1best, mse_fit.d1D1best), 3),
+  MSE_full = round(c(#mse_full.sm, 
+    mse_full.D1best, mse_full.d1D1best), 3),
+  MSE_n_months = round(c(#mse_short.sm,
+    mse_short.D1best, mse_short.d1D1best), 3)
 )
 
-# look at forecast error to decide which model is better (can't compare AIC or BIC due to different d/D)
-print(mse_df)
-# Lowest forecast error should be best, however, it only applies for a short period of time.
+mse_df
