@@ -65,9 +65,24 @@ plot(unrate.2003.2006, type="l", ylab="Unemployment Rate (%)", main="US Unemploy
 grid()
 # There is a seasonal pattern within each year (freq could be 12)
 
-# histogram
-hist(unrate.2015, xlab="Unemployment Rate (%)", main="Histogram of US Unemployment Rate 1948-2015", col="skyblue")
+# overview of unrate.2015
+#     residuals (zero mean and homoscedasticity)
+plot(unrate.2015, type="l", ylab="Unemployment Rate (%)", main="US Unemployment Rate 1948-2015")
+abline(h=mean(unrate.2015)) # mean is basically zero, looks homoscedastic (not necessarily equal, but decreasing variance)
+acf(unrate.2015, lag.max=50, main="ACF of US Unemployment Rate 1948-2015")
+pacf(unrate.2015, main="PACF of US Unemployment Rate 1948-2015")
 
+#     normal distribution check
+hist(unrate.2015, xlab="Unemployment Rate (%)", main="Histogram of US Unemployment Rate 1948-2015", col="skyblue")
+# skewed right
+qqnorm(unrate.2015, main="Q-Q Plot of US Unemployment Rate 1948-2015")
+qqline(unrate.2015, col=2)
+shapiro.test(unrate.2015) # normality is violated (p-value<0.05)
+
+#     stationarity
+adf.test(unrate.2015) # fail to reject -> NOT stationary
+pp.test(unrate.2015) # rejected -> stationary
+kpss.test(unrate.2015) # rejected -> NOT stationary
 
 
 
@@ -85,12 +100,13 @@ hist(unrate.2015, xlab="Unemployment Rate (%)", main="Histogram of US Unemployme
 # plot(model.sm.resid, ylab="Residuals", main="Residuals of Seasonal Means Model\n1948-2015")
 # abline(h=mean(model.sm.resid)) # mean is basically zero
 # acf(model.sm.resid, lag.max=1000, main="ACF of Seasonal Means\nUS Unemployment Rate 1948-2015") # fast decay
-# pacf(model.sm.resid, lag.max=100, main="ACF of Seasonal Means\nUS Unemployment Rate 1948-2015")
+# pacf(model.sm.resid, lag.max=100, main="PACF of Seasonal Means\nUS Unemployment Rate 1948-2015")
 # 
 # # normal distribution check
 # hist(model.sm.resid, xlab="Residuals", main="Histogram of Seasonal Means Residuals", col="skyblue")
 # qqnorm(model.sm.resid, main="Q-Q Plot of Seasonal Means Residuals")
 # qqline(model.sm.resid)
+# shapiro.test(model.sm.resid) # p<0.05 -> NOT normally distributed
 # # It is not normally distributed (positive skew) -> may require transformation or different model
 # #     , but it's not bad
 # 
